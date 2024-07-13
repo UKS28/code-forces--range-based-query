@@ -1,0 +1,90 @@
+#include <bits/stdc++.h>
+using namespace std;
+#define ll long long
+#define rep(i, st, ed) for (int i = st; i < ed; i++)
+
+class sgTree
+{
+public:
+  vector<ll> tree;
+  sgTree(int n)
+  {
+    tree.resize(4 * n + 1);
+  }
+
+  // flag- 1=> xor , 0 => or
+  void build(int si, int ss, int se, vector<ll> &arr, int flag)
+  {
+    if (ss == se)
+    {
+      tree[si] = arr[ss];
+
+      return;
+    }
+
+    int mid = ss + (se - ss) / 2;
+    build(2 * si + 1, ss, mid, arr, 1 - flag);
+    build(2 * si + 2, mid + 1, se, arr, 1 - flag);
+    if (flag)
+      tree[si] = tree[2 * si + 1] ^ tree[2 * si + 2];
+    else
+      tree[si] = tree[2 * si + 1] | tree[2 * si + 2];
+  }
+
+  void update(int si, int ss, int se, int pos, ll val, int flag)
+  {
+    if (ss == se)
+    {
+      tree[si] = val;
+      return;
+    }
+    int mid = ss + (se - ss) / 2;
+    if (pos >= ss && pos <= mid)
+    {
+      update(2 * si + 1, ss, mid, pos, val, 1 - flag);
+    }
+    else
+    {
+      update(2 * si + 2, mid + 1, se, pos, val, 1 - flag);
+    }
+
+    if (flag)
+      tree[si] = tree[2 * si + 1] ^ tree[2 * si + 2];
+    else
+      tree[si] = tree[2 * si + 1] | tree[2 * si + 2];
+  }
+
+  int query()
+  {
+    return tree[0];
+  }
+};
+
+int main()
+{
+  int n, m;
+  cin >> n >> m;
+  int flag = 0;
+  if (n % 2 == 0)
+    flag = 1;
+
+  n = 1 << n;
+
+  vector<ll> arr(n);
+  rep(i, 0, n) cin >> arr[i];
+
+  // flag- 1=> xor , 0 => or
+  // n even means xor first
+
+  sgTree st(n);
+  st.build(0, 0, n - 1, arr, flag);
+
+  while (m--)
+  {
+    int pos, val;
+    cin >> pos >> val;
+    pos--;
+    st.update(0, 0, n - 1, pos, val, flag);
+    cout << st.query() << endl;
+  }
+}
